@@ -4,7 +4,7 @@
 		"activities": [
 			{
 				"name": "Copy Data From API to BLOB",
-				"description": "Copying data from Users WEB API to Users Sink Blob",
+				"description": "Copying data from WEB API to Users Sink Blob",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
