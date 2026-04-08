@@ -1,0 +1,18 @@
+{
+	"name": "DS_REST_Users",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_WebApi_Users",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "WebAPI_Datasets/Source"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": "/users"
+		},
+		"schema": []
+	}
+}
