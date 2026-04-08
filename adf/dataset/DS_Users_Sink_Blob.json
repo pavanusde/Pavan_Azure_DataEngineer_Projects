@@ -1,0 +1,30 @@
+{
+	"name": "DS_Users_Sink_Blob",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_Sink_Blob",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "WebAPI_Datasets/Sink"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@concat(\n  'users_',\n  formatDateTime(convertFromUtc(utcNow(),'US Mountain Standard Time'),'yyyyMMdd_HHmmss'),\n  '.json'\n)",
+					"type": "Expression"
+				},
+				"folderPath": "users",
+				"container": "global"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
