@@ -29,3 +29,8 @@ This returns important values you need for Azure permission setup, including the
 Very important note
 
 Even though your storage is ADLS Gen2, for the Snowflake stage and integration URL you should use the blob.core.windows.net endpoint, not the dfs.core.windows.net endpoint. Snowflake explicitly calls out using the blob endpoint for supported Azure blob storage accounts, including Data Lake Storage Gen2.
+
+After Verfying the connection.
+Authorize Snowflake in Azure
+🔹 Step 1: Copy Consent URL
+Copy value of: AZURE_CONSENT_URL
