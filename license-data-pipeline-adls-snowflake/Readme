@@ -6,14 +6,26 @@ https://licdatadldev01.dfs.core.windows.net/rawdata/raw/
 
 How to get tenant id : Azure Portal → Microsoft Entra ID → Overview → Tenant ID. Snowflake’s Azure integration requires this tenant ID.
 
-Snowflake’s Azure storage integration for external stages uses 
-TYPE = EXTERNAL_STAGE, STORAGE_PROVIDER = 'AZURE', your Azure tenant ID, and allowed Azure locations. For Azure stages, 
-Snowflake documents the azure://<account>.blob.core.windows.net/<container>/<path>/ style URL, including for ADLS Gen2-backed storage accounts.
+Create Snowflake Storage Integration
 
-Use Below For Snowflake Integratoin
+Use this template and replace the placeholders with your real values.
+
+Step 1: create the integration
 CREATE OR REPLACE STORAGE INTEGRATION azure_adls_int
   TYPE = EXTERNAL_STAGE
   STORAGE_PROVIDER = 'AZURE'
   ENABLED = TRUE
   AZURE_TENANT_ID = '<your-tenant-id>'
   STORAGE_ALLOWED_LOCATIONS = ('azure://<your-storage-account>.blob.core.windows.net/rawdata/raw/');
+
+Snowflake’s Azure storage integration for external stages uses TYPE = EXTERNAL_STAGE, STORAGE_PROVIDER = 'AZURE', your Azure tenant ID, and allowed Azure locations. For Azure stages, 
+Snowflake documents the azure://<account>.blob.core.windows.net/<container>/<path>/ style URL, including for ADLS Gen2-backed storage accounts.
+
+Step 2: verify it
+DESC INTEGRATION azure_adls_int;
+
+This returns important values you need for Azure permission setup, including the generated Snowflake Azure consent URL and service principal details used to grant access on the storage side. Snowflake documents that storage integrations avoid hardcoding credentials by using a generated Azure identity.
+
+Very important note
+
+Even though your storage is ADLS Gen2, for the Snowflake stage and integration URL you should use the blob.core.windows.net endpoint, not the dfs.core.windows.net endpoint. Snowflake explicitly calls out using the blob endpoint for supported Azure blob storage accounts, including Data Lake Storage Gen2.
