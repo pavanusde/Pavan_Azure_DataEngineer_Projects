@@ -1,0 +1,5 @@
+Project Description: End-to-End Data Pipeline for Licensing, Violations & Payments (ADLS + Snowflake)
+
+Blob Storage name: https://<storage-account>.dfs.core.windows.net/rawdata/raw/
+
+https://licdatadldev01.dfs.core.windows.net/rawdata/raw/
