@@ -32,7 +32,7 @@
 			},
 			"gp_snowflakePasswordSecretName": {
 				"type": "string",
-				"value": "Test"
+				"value": "snowflake-dev-password"
 			},
 			"gp_keyVaultBaseUrl": {
 				"type": "string",
