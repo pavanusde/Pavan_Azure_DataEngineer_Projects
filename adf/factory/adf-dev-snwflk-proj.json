@@ -9,6 +9,10 @@
 			"gp_snowflakeAccount": {
 				"type": "string",
 				"value": "GHB74201"
+			},
+			"gp_snowflakeWarehouse": {
+				"type": "string",
+				"value": "COMPUTE_WH"
 			}
 		},
 		"trustModeClaimForMi": {
