@@ -13,6 +13,10 @@
 			"gp_snowflakeWarehouse": {
 				"type": "string",
 				"value": "COMPUTE_WH"
+			},
+			"gp_snowflakeDatabase": {
+				"type": "string",
+				"value": "LICENSING_DB"
 			}
 		},
 		"trustModeClaimForMi": {
