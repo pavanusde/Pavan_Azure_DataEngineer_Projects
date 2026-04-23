@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Script1",
+				"name": "Fetch_Data_From_Snowflake",
 				"type": "Script",
 				"dependsOn": [],
 				"policy": {
@@ -41,7 +41,7 @@
 						{
 							"type": "Query",
 							"text": {
-								"value": "select * from LICENSING_DB.MART.DIM_LICENSE",
+								"value": "@concat(\n    'call'\n    ,pipeline().parameters.pDatabase,'.'\n    ,pipeline().parameters.pSchema,'.'\n    ,'(''ACTIVE''',')'\n    )",
 								"type": "Expression"
 							}
 						}
@@ -55,7 +55,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Script1",
+						"activity": "Fetch_Data_From_Snowflake",
 						"dependencyConditions": [
 							"Succeeded"
 						]
