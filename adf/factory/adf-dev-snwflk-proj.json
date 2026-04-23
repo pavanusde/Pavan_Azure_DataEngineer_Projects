@@ -33,6 +33,10 @@
 			"gp_snowflakePasswordSecretName": {
 				"type": "string",
 				"value": "Test"
+			},
+			"gp_keyVaultBaseUrl": {
+				"type": "string",
+				"value": "Test"
 			}
 		},
 		"trustModeClaimForMi": {
