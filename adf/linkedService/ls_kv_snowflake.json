@@ -1,14 +1,32 @@
 {
 	"name": "ls_kv_snowflake",
 	"properties": {
+		"parameters": {
+			"pAccount": {
+				"type": "string",
+				"defaultValue": "GUFFHNC-GGB13378"
+			},
+			"pWarehouse": {
+				"type": "string",
+				"defaultValue": "COMPUTE_WH"
+			},
+			"pDatabase": {
+				"type": "string",
+				"defaultValue": "LICENSING_DB"
+			},
+			"pUser": {
+				"type": "string",
+				"defaultValue": "PAVANUSDE"
+			}
+		},
 		"annotations": [],
 		"type": "SnowflakeV2",
 		"typeProperties": {
 			"authenticationType": "KeyPair",
-			"accountIdentifier": "GUFFHNC-GGB13378",
-			"user": "PAVANUSDE",
-			"database": "LICENSING_DB",
-			"warehouse": "COMPUTE_WH",
+			"accountIdentifier": "@{linkedService().pAccount}",
+			"user": "@{linkedService().pUser}",
+			"database": "@{linkedService().pDatabase}",
+			"warehouse": "@{linkedService().pWarehouse}",
 			"privateKey": {
 				"type": "AzureKeyVaultSecret",
 				"store": {
