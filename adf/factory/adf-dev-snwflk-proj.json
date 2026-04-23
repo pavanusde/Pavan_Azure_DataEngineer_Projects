@@ -5,6 +5,10 @@
 			"gp_environment": {
 				"type": "string",
 				"value": "Dev"
+			},
+			"gp_snowflakeAccount": {
+				"type": "string",
+				"value": "GHB74201"
 			}
 		},
 		"trustModeClaimForMi": {
