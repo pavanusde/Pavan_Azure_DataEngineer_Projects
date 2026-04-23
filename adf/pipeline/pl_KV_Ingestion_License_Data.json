@@ -23,7 +23,7 @@
 						{
 							"type": "Query",
 							"text": {
-								"value": "@concat('call ', pipeline().parameters.p_Database, '.', pipeline().parameters.pSchema_nm, '.', pipeline().parameters.pStoedProcedure_nm, ' (''', trim(pipeline().parameters.pparam_val), ''')')\n\n",
+								"value": "select * from LICENSING_DB.MART.DIM_LICENSE",
 								"type": "Expression"
 							}
 						}
@@ -35,6 +35,8 @@
 			{
 				"name": "ForEach1",
 				"type": "ForEach",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Script1",
@@ -87,7 +89,7 @@
 		"parameters": {
 			"pAccount": {
 				"type": "string",
-				"defaultValue": "GUFFHNC"
+				"defaultValue": "GUFFHNC-GGB13378"
 			},
 			"pWarehouse": {
 				"type": "string",
