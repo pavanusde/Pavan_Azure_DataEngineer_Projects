@@ -36,7 +36,7 @@
 			},
 			"gp_keyVaultBaseUrl": {
 				"type": "string",
-				"value": "Test"
+				"value": "https://kv-adf-dev.vault.azure.net/"
 			}
 		},
 		"trustModeClaimForMi": {
