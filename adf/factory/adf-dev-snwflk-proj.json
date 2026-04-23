@@ -17,6 +17,10 @@
 			"gp_snowflakeDatabase": {
 				"type": "string",
 				"value": "LICENSING_DB"
+			},
+			"gp_snowflakeSchema": {
+				"type": "string",
+				"value": "MART"
 			}
 		},
 		"trustModeClaimForMi": {
