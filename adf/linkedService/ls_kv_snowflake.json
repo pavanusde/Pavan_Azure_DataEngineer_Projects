@@ -35,6 +35,14 @@
 				},
 				"secretName": "snowflake-private-key"
 			},
+			"privateKeyPassphrase": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_keyvault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "snowflake-private-key-passphrase"
+			},
 			"useUtcTimestamps": false
 		},
 		"version": "1.1"
