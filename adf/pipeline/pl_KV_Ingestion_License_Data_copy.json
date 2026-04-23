@@ -1,5 +1,5 @@
 {
-	"name": "pl_Ingestion_License_Data",
+	"name": "pl_KV_Ingestion_License_Data_copy",
 	"properties": {
 		"activities": [
 			{
@@ -85,21 +85,9 @@
 			}
 		],
 		"parameters": {
-			"pparam_val": {
+			"p_snowflakeAccount": {
 				"type": "string",
-				"defaultValue": "ACTIVE"
-			},
-			"p_Database": {
-				"type": "string",
-				"defaultValue": "LICENSING_DB"
-			},
-			"pSchema_nm": {
-				"type": "string",
-				"defaultValue": "MART"
-			},
-			"pStoedProcedure_nm": {
-				"type": "string",
-				"defaultValue": "GET_LICENSES_BY_STATUS"
+				"defaultValue": "@ "
 			}
 		},
 		"variables": {
