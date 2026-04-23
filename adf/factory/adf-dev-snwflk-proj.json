@@ -1,6 +1,12 @@
 {
 	"name": "adf-dev-snwflk-proj",
 	"properties": {
+		"globalParameters": {
+			"gp_environment": {
+				"type": "string",
+				"value": "Dev"
+			}
+		},
 		"trustModeClaimForMi": {
 			"value": "Enabled",
 			"editable": true
