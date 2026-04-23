@@ -21,6 +21,10 @@
 			"gp_snowflakeSchema": {
 				"type": "string",
 				"value": "MART"
+			},
+			"gp_snowflakeRole": {
+				"type": "string",
+				"value": "ACCOUNTADMIN"
 			}
 		},
 		"trustModeClaimForMi": {
