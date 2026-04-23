@@ -15,8 +15,26 @@
 				},
 				"userProperties": [],
 				"linkedServiceName": {
-					"referenceName": "ls_snowflake_dev",
-					"type": "LinkedServiceReference"
+					"referenceName": "ls_kv_snowflake",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"pAccount": {
+							"value": "@pipeline().parameters.pAccount",
+							"type": "Expression"
+						},
+						"pWarehouse": {
+							"value": "@pipeline().parameters.pWarehouse",
+							"type": "Expression"
+						},
+						"pDatabase": {
+							"value": "@pipeline().parameters.pDatabase",
+							"type": "Expression"
+						},
+						"pUser": {
+							"value": "@pipeline().parameters.pUser",
+							"type": "Expression"
+						}
+					}
 				},
 				"typeProperties": {
 					"scripts": [
