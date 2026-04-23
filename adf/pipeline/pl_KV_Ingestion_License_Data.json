@@ -1,5 +1,5 @@
 {
-	"name": "pl_KV_Ingestion_License_Data_copy",
+	"name": "pl_KV_Ingestion_License_Data",
 	"properties": {
 		"activities": [
 			{
