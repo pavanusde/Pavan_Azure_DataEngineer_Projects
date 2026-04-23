@@ -25,6 +25,10 @@
 			"gp_snowflakeRole": {
 				"type": "string",
 				"value": "ACCOUNTADMIN"
+			},
+			"gp_snowflakeUser": {
+				"type": "string",
+				"value": "PAVANUSDE"
 			}
 		},
 		"trustModeClaimForMi": {
