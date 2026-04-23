@@ -29,6 +29,10 @@
 			"gp_snowflakeUser": {
 				"type": "string",
 				"value": "PAVANUSDE"
+			},
+			"gp_snowflakePasswordSecretName": {
+				"type": "string",
+				"value": "Test"
 			}
 		},
 		"trustModeClaimForMi": {
