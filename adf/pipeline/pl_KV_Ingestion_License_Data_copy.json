@@ -85,9 +85,33 @@
 			}
 		],
 		"parameters": {
-			"p_snowflakeAccount": {
+			"pAccount": {
 				"type": "string",
-				"defaultValue": "@ "
+				"defaultValue": "GUFFHNC"
+			},
+			"pWarehouse": {
+				"type": "string",
+				"defaultValue": "COMPUTE_WH"
+			},
+			"pDatabase": {
+				"type": "string",
+				"defaultValue": "LICENSING_DB"
+			},
+			"pSchema": {
+				"type": "string",
+				"defaultValue": "MART"
+			},
+			"pRole": {
+				"type": "string",
+				"defaultValue": "ACCOUNTADMIN"
+			},
+			"pUser": {
+				"type": "string",
+				"defaultValue": "PAVANUSDE"
+			},
+			"pPasswordSecretName": {
+				"type": "string",
+				"defaultValue": "snowflake-dev-password"
 			}
 		},
 		"variables": {
