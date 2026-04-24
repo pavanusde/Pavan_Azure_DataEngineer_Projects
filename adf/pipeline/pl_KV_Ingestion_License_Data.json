@@ -1,9 +1,9 @@
 {
-	"name": "pl_Ingestion_License_Data",
+	"name": "pl_KV_Ingestion_License_Data",
 	"properties": {
 		"activities": [
 			{
-				"name": "Script1",
+				"name": "Fetch_Data_From_Snowflake",
 				"type": "Script",
 				"dependsOn": [],
 				"policy": {
@@ -15,15 +15,33 @@
 				},
 				"userProperties": [],
 				"linkedServiceName": {
-					"referenceName": "ls_snowflake_dev",
-					"type": "LinkedServiceReference"
+					"referenceName": "ls_kv_snowflake",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"pAccount": {
+							"value": "@pipeline().parameters.pAccount",
+							"type": "Expression"
+						},
+						"pWarehouse": {
+							"value": "@pipeline().parameters.pWarehouse",
+							"type": "Expression"
+						},
+						"pDatabase": {
+							"value": "@pipeline().parameters.pDatabase",
+							"type": "Expression"
+						},
+						"pUser": {
+							"value": "@pipeline().parameters.pUser",
+							"type": "Expression"
+						}
+					}
 				},
 				"typeProperties": {
 					"scripts": [
 						{
 							"type": "Query",
 							"text": {
-								"value": "@concat('call ', pipeline().parameters.p_Database, '.', pipeline().parameters.pSchema_nm, '.', pipeline().parameters.pStoedProcedure_nm, ' (''', trim(pipeline().parameters.pparam_val), ''')')\n\n",
+								"value": "@concat(\n    'CALL ',\n    pipeline().parameters.pDatabase, '.',\n    pipeline().parameters.pSchema, '.',\n    pipeline().parameters.pStord_Proc_Name,\n    '(''',\n    pipeline().parameters.pStored_Proc_Param,\n    ''')'\n)    \n",
 								"type": "Expression"
 							}
 						}
@@ -37,7 +55,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Script1",
+						"activity": "Fetch_Data_From_Snowflake",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -46,7 +64,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Script1').output.resultSets[0].rows",
+						"value": "@activity('Fetch_Data_From_Snowflake').output.resultSets[0].rows\n",
 						"type": "Expression"
 					},
 					"isSequential": true,
@@ -85,19 +103,39 @@
 			}
 		],
 		"parameters": {
-			"pparam_val": {
+			"pAccount": {
 				"type": "string",
-				"defaultValue": "ACTIVE"
+				"defaultValue": "GUFFHNC-GGB13378"
 			},
-			"p_Database": {
+			"pWarehouse": {
+				"type": "string",
+				"defaultValue": "COMPUTE_WH"
+			},
+			"pDatabase": {
 				"type": "string",
 				"defaultValue": "LICENSING_DB"
 			},
-			"pSchema_nm": {
+			"pSchema": {
 				"type": "string",
 				"defaultValue": "MART"
 			},
-			"pStoedProcedure_nm": {
+			"pRole": {
+				"type": "string",
+				"defaultValue": "ACCOUNTADMIN"
+			},
+			"pUser": {
+				"type": "string",
+				"defaultValue": "PAVANUSDE"
+			},
+			"pPasswordSecretName": {
+				"type": "string",
+				"defaultValue": "snowflake-dev-password"
+			},
+			"pStored_Proc_Param": {
+				"type": "string",
+				"defaultValue": "ACTIVE"
+			},
+			"pStord_Proc_Name": {
 				"type": "string",
 				"defaultValue": "GET_LICENSES_BY_STATUS"
 			}
