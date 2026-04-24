@@ -329,6 +329,49 @@
 					"referenceName": "LS_Sink_SQL_DB",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "SP_End_Batch_Success",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP_Merge_DIM_LICENSES",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[audit].[usp_EndPipelineBatch_Success]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						},
+						"RowsCopied": {
+							"value": {
+								"value": "@activity('CPY_Snowflake_DIM_LICENSES_To_Staging').output",
+								"type": "Expression"
+							},
+							"type": "Int64"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"parameters": {
