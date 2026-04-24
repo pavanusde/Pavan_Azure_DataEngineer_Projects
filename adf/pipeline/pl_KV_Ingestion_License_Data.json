@@ -372,6 +372,105 @@
 					"referenceName": "LS_Sink_SQL_DB",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "SP_End_Batch_Failure",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP_Merge_DIM_LICENSES",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[audit].[usp_EndPipelineBatch_Failure]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						},
+						"ErrorMessage": {
+							"value": {
+								"value": "@string(activity('SP_Merge_DIM_LICENSES').error.message)",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Send_Success_Email",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "SP_End_Batch_Success",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-30.centralus.logic.azure.com:443/workflows/acf4a9ff6f34422fa61b198e8ab0ebed/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=kI7wa2-gP6UGvEEyMYaAE47R-_wKXrES3miYcU3G4I4",
+					"body": {
+						"value": "{\n  \"BatchUID\": \"@{variables('vBatchUID')}\",\n  \"Status\": \"SUCCESS\",\n  \"Message\": \"Pipeline completed successfully\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Send_Failed_Email",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "SP_End_Batch_Failure",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-30.centralus.logic.azure.com:443/workflows/acf4a9ff6f34422fa61b198e8ab0ebed/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=kI7wa2-gP6UGvEEyMYaAE47R-_wKXrES3miYcU3G4I4",
+					"body": {
+						"value": "{\n  \"BatchUID\": \"@{variables('vBatchUID')}\",\n  \"Status\": \"FAILED\",\n  \"Message\": \"Pipeline failed. Please check ADF run logs.\"\n}",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
