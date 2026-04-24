@@ -1,0 +1,56 @@
+{
+	"name": "DS_SQL_STG_DIM_LICENSES",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_Sink_SQL_DB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "BatchUID",
+				"type": "uniqueidentifier"
+			},
+			{
+				"name": "LICENSE_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PERSON_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "LICENSE_TYPE",
+				"type": "varchar"
+			},
+			{
+				"name": "ISSUE_DATE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "EXPIRY_DATE",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "LICENSE_STATUS",
+				"type": "varchar"
+			},
+			{
+				"name": "LoadDate",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "stg",
+			"table": "DIM_LICENSES_STG"
+		}
+	}
+}

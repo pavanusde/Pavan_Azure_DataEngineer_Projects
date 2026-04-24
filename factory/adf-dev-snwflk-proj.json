@@ -1,0 +1,15 @@
+{
+	"name": "adf-dev-snwflk-proj",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Enabled",
+			"editable": true
+		}
+	},
+	"location": "centralus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f95943bf-430d-49ef-aace-6b0eaa2cbc7f",
+		"tenantId": "162123c0-f37b-4275-b5fd-e31058379209"
+	}
+}

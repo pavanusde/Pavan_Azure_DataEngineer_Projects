@@ -1,5 +1,5 @@
 /*
---Creating Database 
+--Creating Database and schemas 
 CREATE DATABASE LICENSING_DB;
 
 USE DATABASE LICENSING_DB;

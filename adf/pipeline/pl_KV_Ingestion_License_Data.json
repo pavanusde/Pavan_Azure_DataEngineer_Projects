@@ -1,0 +1,529 @@
+{
+	"name": "pl_KV_Ingestion_License_Data",
+	"properties": {
+		"activities": [
+			{
+				"name": "Set Batch UID",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "vBatchUID",
+					"value": {
+						"value": "@guid()",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SP_Start_Batch_Log",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Set Batch UID",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[audit].[usp_StartPipelineBatch]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						},
+						"PipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineRunId": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"SourceSystem": {
+							"value": {
+								"value": "SnowFlake_LICENSING_DB",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TargetTable": {
+							"value": {
+								"value": "pavandevsqldb.DIM_LICENSES",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Truncate_Staging",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP_Start_Batch_Log",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[stg].[usp_Prepare_DIM_LICENSES_Staging]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "CPY_Snowflake_DIM_LICENSES_To_Staging",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "SP_Truncate_Staging",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SnowflakeV2Source",
+						"query": {
+							"value": "SELECT\n    '@{variables('vBatchUID')}' AS BatchUID,\n    LICENSE_ID,\n    PERSON_ID,\n    LICENSE_TYPE,\n    ISSUE_DATE,\n    EXPIRY_DATE,\n    LICENSE_STATUS\nFROM LICENSING_DB.MART.DIM_LICENSE\nLIMIT 1000",
+							"type": "Expression"
+						},
+						"exportSettings": {
+							"type": "SnowflakeExportCopyCommand"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBatchSize": 10000,
+						"maxConcurrentConnections": 4,
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": true,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "ls_blob_stg",
+							"type": "LinkedServiceReference"
+						},
+						"path": "staging-temp"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "BATCHUID"
+								},
+								"sink": {
+									"name": "BatchUID",
+									"type": "uniqueidentifier"
+								}
+							},
+							{
+								"source": {
+									"name": "LICENSE_ID"
+								},
+								"sink": {
+									"name": "LICENSE_ID",
+									"type": "int",
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "PERSON_ID"
+								},
+								"sink": {
+									"name": "PERSON_ID",
+									"type": "int",
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "LICENSE_TYPE"
+								},
+								"sink": {
+									"name": "LICENSE_TYPE",
+									"type": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ISSUE_DATE"
+								},
+								"sink": {
+									"name": "ISSUE_DATE",
+									"type": "datetime",
+									"scale": 3,
+									"precision": 23
+								}
+							},
+							{
+								"source": {
+									"name": "EXPIRY_DATE"
+								},
+								"sink": {
+									"name": "EXPIRY_DATE",
+									"type": "datetime",
+									"scale": 3,
+									"precision": 23
+								}
+							},
+							{
+								"source": {
+									"name": "LICENSE_STATUS"
+								},
+								"sink": {
+									"name": "LICENSE_STATUS",
+									"type": "varchar"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_Snowflake_Dim_Licenses",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_SQL_STG_DIM_LICENSES",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "SP_Validate_Staging",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CPY_Snowflake_DIM_LICENSES_To_Staging",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[stg].[usp_Validate_DIM_LICENSES_Staging]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Merge_DIM_LICENSES",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP_Validate_Staging",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[SP_MERGE_DIM_LICENSES]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_End_Batch_Success",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP_Merge_DIM_LICENSES",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[audit].[usp_EndPipelineBatch_Success]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						},
+						"RowsCopied": {
+							"value": {
+								"value": "@activity('CPY_Snowflake_DIM_LICENSES_To_Staging').output.rowsCopied",
+								"type": "Expression"
+							},
+							"type": "Int64"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_End_Batch_Failure",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP_Merge_DIM_LICENSES",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[audit].[usp_EndPipelineBatch_Failure]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						},
+						"ErrorMessage": {
+							"value": {
+								"value": "@string(activity('SP_Merge_DIM_LICENSES').error.message)",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Send_Success_Email",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "SP_End_Batch_Success",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-30.centralus.logic.azure.com:443/workflows/acf4a9ff6f34422fa61b198e8ab0ebed/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=kI7wa2-gP6UGvEEyMYaAE47R-_wKXrES3miYcU3G4I4",
+					"body": {
+						"value": "{\n  \"BatchUID\": \"@{variables('vBatchUID')}\",\n  \"Status\": \"SUCCESS\",\n  \"Message\": \"Pipeline completed successfully\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Send_Failed_Email",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "SP_End_Batch_Failure",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-30.centralus.logic.azure.com:443/workflows/acf4a9ff6f34422fa61b198e8ab0ebed/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=kI7wa2-gP6UGvEEyMYaAE47R-_wKXrES3miYcU3G4I4",
+					"body": {
+						"value": "{\n  \"BatchUID\": \"@{variables('vBatchUID')}\",\n  \"Status\": \"FAILED\",\n  \"Message\": \"Pipeline failed. Please check ADF run logs.\"\n}",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"pAccount": {
+				"type": "string",
+				"defaultValue": "GUFFHNC-GGB13378"
+			},
+			"pWarehouse": {
+				"type": "string",
+				"defaultValue": "COMPUTE_WH"
+			},
+			"pDatabase": {
+				"type": "string",
+				"defaultValue": "LICENSING_DB"
+			},
+			"pSchema": {
+				"type": "string",
+				"defaultValue": "MART"
+			},
+			"pRole": {
+				"type": "string",
+				"defaultValue": "ACCOUNTADMIN"
+			},
+			"pUser": {
+				"type": "string",
+				"defaultValue": "PAVANUSDE"
+			},
+			"pPasswordSecretName": {
+				"type": "string",
+				"defaultValue": "snowflake-dev-password"
+			},
+			"pStored_Proc_Param": {
+				"type": "string",
+				"defaultValue": "ACTIVE"
+			},
+			"pStord_Proc_Name": {
+				"type": "string",
+				"defaultValue": "GET_LICENSES_BY_STATUS"
+			}
+		},
+		"variables": {
+			"p_test": {
+				"type": "String"
+			},
+			"vBatchUID": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Snowflake_Projects"
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-04-22T18:51:18Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

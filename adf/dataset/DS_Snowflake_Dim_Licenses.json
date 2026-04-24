@@ -1,0 +1,12 @@
+{
+	"name": "DS_Snowflake_Dim_Licenses",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_kv_snowflake",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": []
+	}
+}

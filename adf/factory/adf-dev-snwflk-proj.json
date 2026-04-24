@@ -1,0 +1,53 @@
+{
+	"name": "adf-dev-snwflk-proj",
+	"properties": {
+		"globalParameters": {
+			"gp_environment": {
+				"type": "string",
+				"value": "dev"
+			},
+			"gp_snowflakeAccount": {
+				"type": "string",
+				"value": "GHB74201"
+			},
+			"gp_snowflakeWarehouse": {
+				"type": "string",
+				"value": "COMPUTE_WH"
+			},
+			"gp_snowflakeDatabase": {
+				"type": "string",
+				"value": "LICENSING_DB"
+			},
+			"gp_snowflakeSchema": {
+				"type": "string",
+				"value": "MART"
+			},
+			"gp_snowflakeRole": {
+				"type": "string",
+				"value": "ACCOUNTADMIN"
+			},
+			"gp_snowflakeUser": {
+				"type": "string",
+				"value": "PAVANUSDE"
+			},
+			"gp_snowflakePasswordSecretName": {
+				"type": "string",
+				"value": "snowflake-dev-password"
+			},
+			"gp_keyVaultBaseUrl": {
+				"type": "string",
+				"value": "https://kv-adf-dev.vault.azure.net/"
+			}
+		},
+		"trustModeClaimForMi": {
+			"value": "Enabled",
+			"editable": true
+		}
+	},
+	"location": "centralus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f95943bf-430d-49ef-aace-6b0eaa2cbc7f",
+		"tenantId": "162123c0-f37b-4275-b5fd-e31058379209"
+	}
+}

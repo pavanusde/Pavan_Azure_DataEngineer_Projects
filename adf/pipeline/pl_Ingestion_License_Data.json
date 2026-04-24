@@ -1,0 +1,117 @@
+{
+	"name": "pl_Ingestion_License_Data",
+	"properties": {
+		"activities": [
+			{
+				"name": "Script1",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "ls_snowflake_dev",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": {
+								"value": "@concat('call ', pipeline().parameters.p_Database, '.', pipeline().parameters.pSchema_nm, '.', pipeline().parameters.pStoedProcedure_nm, ' (''', trim(pipeline().parameters.pparam_val), ''')')\n\n",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00",
+					"treatDecimalAsString": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Script1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Script1').output.resultSets[0].rows",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Script_to_insert_records_SQLDB",
+							"type": "Script",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "LS_Sink_SQL_DB",
+								"type": "LinkedServiceReference"
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": {
+											"value": "@concat(\n'INSERT INTO dbo.DIM_LICENSES (LICENSE_ID, PERSON_ID, LICENSE_TYPE, ISSUE_DATE, EXPIRY_DATE, LICENSE_STATUS) VALUES (''',\nitem().LICENSE_ID, ''',''',\nitem().PERSON_ID, ''',''',\nitem().LICENSE_TYPE, ''',''',\nitem().ISSUE_DATE, ''',''',\nitem().EXPIRY_DATE, ''',''',\nitem().LICENSE_STATUS, ''')'\n)",
+											"type": "Expression"
+										}
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"pparam_val": {
+				"type": "string",
+				"defaultValue": "ACTIVE"
+			},
+			"p_Database": {
+				"type": "string",
+				"defaultValue": "LICENSING_DB"
+			},
+			"pSchema_nm": {
+				"type": "string",
+				"defaultValue": "MART"
+			},
+			"pStoedProcedure_nm": {
+				"type": "string",
+				"defaultValue": "GET_LICENSES_BY_STATUS"
+			}
+		},
+		"variables": {
+			"p_test": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Snowflake_Projects"
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-04-22T18:51:18Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
