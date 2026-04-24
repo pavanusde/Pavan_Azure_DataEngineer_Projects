@@ -3,9 +3,33 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Fetch_Data_From_Snowflake",
-				"type": "Script",
+				"name": "Set Batch UID",
+				"type": "SetVariable",
 				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "vBatchUID",
+					"value": {
+						"value": "@guid()",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SP_Start_Batch_Log",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Set Batch UID",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -14,92 +38,225 @@
 					"secureInput": false
 				},
 				"userProperties": [],
-				"linkedServiceName": {
-					"referenceName": "ls_kv_snowflake",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"pAccount": {
-							"value": "@pipeline().parameters.pAccount",
-							"type": "Expression"
+				"typeProperties": {
+					"storedProcedureName": "[audit].[usp_StartPipelineBatch]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
 						},
-						"pWarehouse": {
-							"value": "@pipeline().parameters.pWarehouse",
-							"type": "Expression"
+						"PipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
 						},
-						"pDatabase": {
-							"value": "@pipeline().parameters.pDatabase",
-							"type": "Expression"
+						"PipelineRunId": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
 						},
-						"pUser": {
-							"value": "@pipeline().parameters.pUser",
-							"type": "Expression"
+						"SourceSystem": {
+							"value": {
+								"value": "SnowFlake_LICENSING_DB",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"TargetTable": {
+							"value": {
+								"value": "pavandevsqldb.DIM_LICENSES",
+								"type": "Expression"
+							},
+							"type": "String"
 						}
 					}
 				},
-				"typeProperties": {
-					"scripts": [
-						{
-							"type": "Query",
-							"text": {
-								"value": "@concat(\n    'CALL ',\n    pipeline().parameters.pDatabase, '.',\n    pipeline().parameters.pSchema, '.',\n    pipeline().parameters.pStord_Proc_Name,\n    '(''',\n    pipeline().parameters.pStored_Proc_Param,\n    ''')'\n)    \n",
-								"type": "Expression"
-							}
-						}
-					],
-					"scriptBlockExecutionTimeout": "02:00:00",
-					"treatDecimalAsString": false
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
 				}
 			},
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
+				"name": "SP_Truncate_Staging",
+				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "Fetch_Data_From_Snowflake",
+						"activity": "SP_Start_Batch_Log",
 						"dependencyConditions": [
 							"Succeeded"
 						]
 					}
 				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"items": {
-						"value": "@activity('Fetch_Data_From_Snowflake').output.resultSets[0].rows\n",
-						"type": "Expression"
-					},
-					"isSequential": true,
-					"activities": [
-						{
-							"name": "Script_to_insert_records_SQLDB",
-							"type": "Script",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
+					"storedProcedureName": "[stg].[usp_Prepare_DIM_LICENSES_Staging]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
 							},
-							"userProperties": [],
-							"linkedServiceName": {
-								"referenceName": "LS_Sink_SQL_DB",
-								"type": "LinkedServiceReference"
-							},
-							"typeProperties": {
-								"scripts": [
-									{
-										"type": "Query",
-										"text": {
-											"value": "@concat(\n'INSERT INTO dbo.DIM_LICENSES (LICENSE_ID, PERSON_ID, LICENSE_TYPE, ISSUE_DATE, EXPIRY_DATE, LICENSE_STATUS) VALUES (''',\nitem().LICENSE_ID, ''',''',\nitem().PERSON_ID, ''',''',\nitem().LICENSE_TYPE, ''',''',\nitem().ISSUE_DATE, ''',''',\nitem().EXPIRY_DATE, ''',''',\nitem().LICENSE_STATUS, ''')'\n)",
-											"type": "Expression"
-										}
-									}
-								],
-								"scriptBlockExecutionTimeout": "02:00:00"
-							}
+							"type": "Guid"
 						}
-					]
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "CPY_Snowflake_DIM_LICENSES_To_Staging",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "SP_Truncate_Staging",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SnowflakeV2Source",
+						"query": {
+							"value": "SELECT\n    '@{variables('vBatchUID')}' AS BatchUID,\n    LICENSE_ID,\n    PERSON_ID,\n    LICENSE_TYPE,\n    ISSUE_DATE,\n    EXPIRY_DATE,\n    LICENSE_STATUS\nFROM LICENSING_DB.MART.DIM_LICENSE\nLIMIT 1000",
+							"type": "Expression"
+						},
+						"exportSettings": {
+							"type": "SnowflakeExportCopyCommand"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBatchSize": 10000,
+						"maxConcurrentConnections": 4,
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": true,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "ls_blob_stg",
+							"type": "LinkedServiceReference"
+						},
+						"path": "staging-temp"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "BATCHUID"
+								},
+								"sink": {
+									"name": "BatchUID",
+									"type": "uniqueidentifier"
+								}
+							},
+							{
+								"source": {
+									"name": "LICENSE_ID"
+								},
+								"sink": {
+									"name": "LICENSE_ID",
+									"type": "int",
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "PERSON_ID"
+								},
+								"sink": {
+									"name": "PERSON_ID",
+									"type": "int",
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "LICENSE_TYPE"
+								},
+								"sink": {
+									"name": "LICENSE_TYPE",
+									"type": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ISSUE_DATE"
+								},
+								"sink": {
+									"name": "ISSUE_DATE",
+									"type": "datetime",
+									"scale": 3,
+									"precision": 23
+								}
+							},
+							{
+								"source": {
+									"name": "EXPIRY_DATE"
+								},
+								"sink": {
+									"name": "EXPIRY_DATE",
+									"type": "datetime",
+									"scale": 3,
+									"precision": 23
+								}
+							},
+							{
+								"source": {
+									"name": "LICENSE_STATUS"
+								},
+								"sink": {
+									"name": "LICENSE_STATUS",
+									"type": "varchar"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_Snowflake_Dim_Licenses",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_SQL_STG_DIM_LICENSES",
+						"type": "DatasetReference"
+					}
+				]
 			}
 		],
 		"parameters": {
@@ -142,6 +299,9 @@
 		},
 		"variables": {
 			"p_test": {
+				"type": "String"
+			},
+			"vBatchUID": {
 				"type": "String"
 			}
 		},
