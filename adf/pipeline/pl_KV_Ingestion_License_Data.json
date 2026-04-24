@@ -361,7 +361,7 @@
 						},
 						"RowsCopied": {
 							"value": {
-								"value": "@activity('CPY_Snowflake_DIM_LICENSES_To_Staging').output",
+								"value": "@activity('CPY_Snowflake_DIM_LICENSES_To_Staging').output.rowsCopied",
 								"type": "Expression"
 							},
 							"type": "Int64"
