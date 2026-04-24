@@ -257,6 +257,78 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "SP_Validate_Staging",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CPY_Snowflake_DIM_LICENSES_To_Staging",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[stg].[usp_Validate_DIM_LICENSES_Staging]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Merge_DIM_LICENSES",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP_Validate_Staging",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[SP_MERGE_DIM_LICENSES]",
+					"storedProcedureParameters": {
+						"BatchUID": {
+							"value": {
+								"value": "@variables('vBatchUID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Sink_SQL_DB",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"parameters": {
